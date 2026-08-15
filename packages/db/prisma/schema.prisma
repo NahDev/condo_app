@@ -1,0 +1,241 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Papel {
+  ADMIN
+  SINDICO
+  MORADOR
+  PORTEIRO
+}
+
+enum StatusReserva {
+  CONFIRMADA
+  CANCELADA
+}
+
+enum StatusOcorrencia {
+  ABERTA
+  EM_ANDAMENTO
+  RESOLVIDA
+}
+
+enum Recurso {
+  AVISOS
+  UNIDADES
+  AREAS_COMUNS
+  RESERVAS
+  OCORRENCIAS
+  VISITANTES
+  ENCOMENDAS
+}
+
+model Condominio {
+  id        String   @id @default(cuid())
+  nome      String
+  cnpj      String?  @unique
+  endereco  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  unidades    Unidade[]
+  usuarios    Usuario[]
+  avisos      Aviso[]
+  areasComuns AreaComum[]
+  ocorrencias Ocorrencia[]
+  visitantes  Visitante[]
+  encomendas  Encomenda[]
+
+  @@map("condominios")
+}
+
+model Unidade {
+  id           String   @id @default(cuid())
+  identificacao String  // ex: "Bloco A - Apto 101"
+  condominioId String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  condominio  Condominio   @relation(fields: [condominioId], references: [id], onDelete: Cascade)
+  moradores   Usuario[]
+  reservas    Reserva[]
+  ocorrencias Ocorrencia[]
+  visitantes  Visitante[]
+  encomendas  Encomenda[]
+
+  @@unique([condominioId, identificacao])
+  @@index([condominioId])
+  @@map("unidades")
+}
+
+model Usuario {
+  id           String   @id @default(cuid())
+  nome         String
+  email        String   @unique
+  senhaHash    String
+  papel        Papel
+  ativo        Boolean  @default(true)
+  condominioId String
+  unidadeId    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  condominio            Condominio         @relation(fields: [condominioId], references: [id], onDelete: Cascade)
+  unidade               Unidade?           @relation(fields: [unidadeId], references: [id], onDelete: SetNull)
+  avisos                Aviso[]
+  reservas              Reserva[]
+  ocorrencias           Ocorrencia[]
+  visitantesRegistrados Visitante[]
+  encomendasRegistradas Encomenda[]
+  permissoes            UsuarioPermissao[]
+  refreshTokens         RefreshToken[]
+
+  @@index([condominioId])
+  @@map("usuarios")
+}
+
+model RefreshToken {
+  id          String    @id @default(cuid())
+  usuarioId   String
+  tokenHash   String    @unique
+  criadoEm    DateTime  @default(now())
+  expiraEm    DateTime
+  revogadoEm  DateTime?
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@map("refresh_tokens")
+}
+
+model UsuarioPermissao {
+  id             String  @id @default(cuid())
+  usuarioId      String
+  recurso        Recurso
+  podeVisualizar Boolean @default(true)
+  podeGerenciar  Boolean @default(false)
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, recurso])
+  @@map("usuario_permissoes")
+}
+
+model Aviso {
+  id           String   @id @default(cuid())
+  titulo       String
+  corpo        String
+  condominioId String
+  autorId      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  condominio Condominio @relation(fields: [condominioId], references: [id], onDelete: Cascade)
+  autor      Usuario    @relation(fields: [autorId], references: [id], onDelete: Cascade)
+
+  @@index([condominioId])
+  @@map("avisos")
+}
+
+model AreaComum {
+  id           String   @id @default(cuid())
+  nome         String
+  regras       String?
+  condominioId String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  condominio Condominio @relation(fields: [condominioId], references: [id], onDelete: Cascade)
+  reservas   Reserva[]
+
+  @@unique([condominioId, nome])
+  @@index([condominioId])
+  @@map("areas_comuns")
+}
+
+model Reserva {
+  id           String        @id @default(cuid())
+  areaComumId  String
+  unidadeId    String
+  condominioId String
+  criadoPorId  String
+  inicio       DateTime
+  fim          DateTime
+  status       StatusReserva @default(CONFIRMADA)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  areaComum AreaComum @relation(fields: [areaComumId], references: [id], onDelete: Cascade)
+  unidade   Unidade   @relation(fields: [unidadeId], references: [id], onDelete: Cascade)
+  criadoPor Usuario   @relation(fields: [criadoPorId], references: [id], onDelete: Cascade)
+
+  @@index([condominioId])
+  @@index([areaComumId, inicio, fim])
+  @@map("reservas")
+}
+
+model Ocorrencia {
+  id           String           @id @default(cuid())
+  titulo       String
+  descricao    String
+  categoria    String?
+  status       StatusOcorrencia @default(ABERTA)
+  condominioId String
+  unidadeId    String?
+  criadoPorId  String
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  condominio Condominio @relation(fields: [condominioId], references: [id], onDelete: Cascade)
+  unidade    Unidade?   @relation(fields: [unidadeId], references: [id], onDelete: SetNull)
+  criadoPor  Usuario    @relation(fields: [criadoPorId], references: [id], onDelete: Cascade)
+
+  @@index([condominioId])
+  @@map("ocorrencias")
+}
+
+model Visitante {
+  id              String    @id @default(cuid())
+  nome            String
+  documento       String?
+  observacao      String?
+  unidadeId       String
+  condominioId    String
+  registradoPorId String
+  entrada         DateTime  @default(now())
+  saida           DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  unidade       Unidade    @relation(fields: [unidadeId], references: [id], onDelete: Cascade)
+  condominio    Condominio @relation(fields: [condominioId], references: [id], onDelete: Cascade)
+  registradoPor Usuario    @relation(fields: [registradoPorId], references: [id], onDelete: Cascade)
+
+  @@index([condominioId])
+  @@map("visitantes")
+}
+
+model Encomenda {
+  id              String    @id @default(cuid())
+  descricao       String?
+  unidadeId       String
+  condominioId    String
+  registradoPorId String
+  recebidaEm      DateTime  @default(now())
+  retiradaEm      DateTime?
+  retiradaPor     String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  unidade       Unidade    @relation(fields: [unidadeId], references: [id], onDelete: Cascade)
+  condominio    Condominio @relation(fields: [condominioId], references: [id], onDelete: Cascade)
+  registradoPor Usuario    @relation(fields: [registradoPorId], references: [id], onDelete: Cascade)
+
+  @@index([condominioId])
+  @@map("encomendas")
+}
