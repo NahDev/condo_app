@@ -61,8 +61,39 @@ Plataforma de gestão de condomínios (SaaS direto para síndicos), atendendo s�
 - `pnpm dev` — roda todos os apps em modo desenvolvimento (via Turborepo)
 - `pnpm build` — build de produção de todos os apps
 - `pnpm typecheck` — checagem de tipos em todo o monorepo
+- `pnpm db:migrate` — cria/aplica migration em desenvolvimento (usa shadow database)
+- `pnpm db:deploy` — aplica migrations pendentes em produção (sem shadow database)
+- `pnpm db:seed` — roda o seed (idempotente, seguro rodar várias vezes)
 - `pnpm db:studio` — abre o Prisma Studio para inspecionar o banco
+
+## Deploy (Railway)
+
+O projeto está preparado para rodar em 3 serviços separados dentro de um mesmo projeto Railway, todos apontando para este repositório (Root Directory = raiz do monorepo em todos eles), com Build/Start Command customizados por serviço:
+
+### 1. Postgres
+Adicionar o plugin "Postgres" do próprio Railway (gera `DATABASE_URL` automaticamente).
+
+### 2. Serviço API (`@condo/api`)
+- **Build Command**: `pnpm install --frozen-lockfile && pnpm --filter @condo/db exec prisma generate && pnpm --filter @condo/api build`
+- **Start Command**: `pnpm --filter @condo/db exec prisma migrate deploy && pnpm --filter @condo/api start`
+- **Variáveis de ambiente**:
+  - `DATABASE_URL` → referenciar a do serviço Postgres (`${{Postgres.DATABASE_URL}}`)
+  - `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` → valores aleatórios longos (nunca reaproveitar os de dev)
+  - `WEB_ORIGIN` → URL pública do serviço Web (ex: `https://condo-app-web.up.railway.app`)
+  - `PORT` → Railway injeta automaticamente, não precisa setar
+
+### 3. Serviço Web (`@condo/web`)
+- **Build Command**: `pnpm install --frozen-lockfile && pnpm --filter @condo/web build`
+- **Start Command**: `pnpm --filter @condo/web start`
+- **Variáveis de ambiente**:
+  - `NEXT_PUBLIC_API_URL` → URL pública do serviço API (ex: `https://condo-app-api.up.railway.app`). É lida em **build time**, então precisa estar configurada antes do primeiro deploy do Web.
+
+> Ordem recomendada: subir o Postgres → subir a API (pegar a URL pública gerada) → configurar `NEXT_PUBLIC_API_URL` no Web com essa URL → subir o Web → voltar na API e configurar `WEB_ORIGIN` com a URL pública do Web → redeploy da API.
+
+Depois do primeiro deploy, rodar o seed uma vez (via `railway run` apontando pro serviço API, ou shell do serviço) se quiser dados de exemplo — em produção real normalmente não se roda o seed, só as migrations.
 
 ## Estado atual
 
-Escopo desta primeira rodada (Fase 1, itens 1–3 do roadmap): fundação do monorepo, autenticação multi-tenant (JWT) e CRUD básico de unidades. Os módulos de negócio (avisos, reservas, ocorrências, financeiro, portaria) e o app mobile estão no roadmap mas ainda não implementados.
+Fase 1 completa (Avisos, Unidades, Áreas comuns, Reservas, Ocorrências) + Portaria (Visitantes/Encomendas) da Fase 2 + gestão de usuários com permissões granulares por recurso. Autenticação com JWT, rotação e revogação de refresh token. Segurança básica de produção (rate limiting, CORS travado, security headers) implementada.
+
+Pendente do roadmap: Cobrança, app mobile, política de privacidade/LGPD, CI/CD.

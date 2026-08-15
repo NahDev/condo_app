@@ -7,6 +7,7 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "db:migrate": "pnpm --filter @condo/db exec prisma migrate dev",
+    "db:deploy": "pnpm --filter @condo/db exec prisma migrate deploy",
     "db:seed": "pnpm --filter @condo/db exec prisma db seed",
     "db:studio": "pnpm --filter @condo/db exec prisma studio"
   },
