@@ -74,8 +74,10 @@ O projeto está preparado para rodar em 3 serviços separados dentro de um mesmo
 Adicionar o plugin "Postgres" do próprio Railway (gera `DATABASE_URL` automaticamente).
 
 ### 2. Serviço API (`@condo/api`)
-- **Build Command**: `pnpm install --frozen-lockfile && pnpm --filter @condo/db exec prisma generate && pnpm --filter @condo/api build`
+- **Build Command**: `pnpm install --frozen-lockfile && pnpm --filter @condo/db exec prisma generate`
 - **Start Command**: `pnpm --filter @condo/db exec prisma migrate deploy && pnpm --filter @condo/api start`
+
+  > `@condo/api` roda via `tsx` mesmo em produção (script `start`), não via `tsc build` + `node dist`. Os pacotes internos (`@condo/shared`, `@condo/db`) são TypeScript puro sem build próprio — `node` sozinho não consegue resolvê-los, mas o `tsx` sim, do mesmo jeito que em dev.
 - **Variáveis de ambiente**:
   - `DATABASE_URL` → referenciar a do serviço Postgres (`${{Postgres.DATABASE_URL}}`)
   - `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` → valores aleatórios longos (nunca reaproveitar os de dev)
