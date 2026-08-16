@@ -76,6 +76,12 @@ export default function LoginPage() {
         <p className="text-xs text-slate-400">
           Seed de exemplo: sindico@exemplo.com / senha123
         </p>
+
+        <p className="text-center text-xs text-slate-400">
+          <a href="/privacidade" className="underline hover:text-slate-600">
+            Política de Privacidade
+          </a>
+        </p>
       </form>
     </div>
   );

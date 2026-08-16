@@ -2,6 +2,20 @@ import type { FastifyInstance } from "fastify";
 import { criarVisitanteSchema } from "@condo/shared";
 import { prisma } from "@condo/db";
 import { authenticate, requirePermissao } from "../auth/hooks";
+import { decryptField, encryptField, maskDocumento } from "../lib/crypto";
+
+/**
+ * Decripta o documento; se o valor não estiver no formato criptografado (ex: dado
+ * gravado antes desta funcionalidade existir), trata como texto legado e mascara
+ * o valor bruto em vez de derrubar a listagem inteira.
+ */
+function decriptarDocumento(valor: string): string {
+  try {
+    return decryptField(valor);
+  } catch {
+    return valor;
+  }
+}
 
 function toVisitantePublico(visitante: {
   id: string;
@@ -17,7 +31,7 @@ function toVisitantePublico(visitante: {
   return {
     id: visitante.id,
     nome: visitante.nome,
-    documento: visitante.documento,
+    documento: visitante.documento ? maskDocumento(decriptarDocumento(visitante.documento)) : null,
     observacao: visitante.observacao,
     unidadeId: visitante.unidadeId,
     unidadeIdentificacao: visitante.unidade.identificacao,
@@ -70,7 +84,7 @@ export async function visitantesRoutes(app: FastifyInstance) {
       const visitante = await prisma.visitante.create({
         data: {
           nome: parsed.data.nome,
-          documento: parsed.data.documento ?? null,
+          documento: parsed.data.documento ? encryptField(parsed.data.documento) : null,
           observacao: parsed.data.observacao ?? null,
           unidadeId: parsed.data.unidadeId,
           condominioId: request.usuario!.condominioId,
