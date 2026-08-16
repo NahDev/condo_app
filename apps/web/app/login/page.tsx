@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { ApiError } from "@condo/shared";
+import { Logo } from "@/components/Logo";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -30,9 +31,12 @@ export default function LoginPage() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm space-y-4 rounded-xl border border-slate-200 bg-white p-8 shadow-sm"
       >
-        <div>
-          <h1 className="text-xl font-semibold">Entrar</h1>
-          <p className="text-sm text-slate-500">Acesse o painel do seu condomínio.</p>
+        <div className="space-y-4">
+          <Logo className="justify-center" />
+          <div>
+            <h1 className="text-xl font-semibold">Entrar</h1>
+            <p className="text-sm text-slate-500">Acesse o painel do seu condomínio.</p>
+          </div>
         </div>
 
         <div className="space-y-1">

@@ -3,8 +3,8 @@ import { AuthProvider } from "@/lib/auth-context";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Condo App",
-  description: "Gestão de condomínios",
+  title: "Condominus",
+  description: "Gestão condominial",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

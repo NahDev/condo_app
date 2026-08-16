@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { Logo } from "@/components/Logo";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { usuario, carregando, logout } = useAuth();
@@ -21,7 +22,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen">
       <aside className="w-64 shrink-0 border-r border-slate-200 bg-white p-4">
-        <p className="mb-6 text-lg font-semibold">Condo App</p>
+        <Logo className="mb-6" />
         <nav className="space-y-1 text-sm">
           <a
             href="/dashboard/avisos"
