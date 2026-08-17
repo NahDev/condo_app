@@ -47,8 +47,8 @@ export function Logo({ markOnly, className }: LogoProps) {
 
   return (
     <div className={`flex items-center gap-2 ${className ?? ""}`}>
-      <LogoMark className="h-8 w-8 shrink-0 text-slate-900" />
-      <span className="text-lg font-bold tracking-tight text-slate-900">CONDOMINUS</span>
+      <LogoMark className="h-8 w-8 shrink-0 text-light-text dark:text-dark-text" />
+      <span className="text-lg font-bold tracking-tight text-light-text dark:text-dark-text">CONDOMINUS</span>
     </div>
   );
 }
