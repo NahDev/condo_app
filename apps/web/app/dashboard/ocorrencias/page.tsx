@@ -7,6 +7,8 @@ import { ApiError } from "@condo/shared";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { temPermissao } from "@/lib/permissions";
+import { FotoInput } from "@/components/FotoInput";
+import { FotoThumb } from "@/components/FotoThumb";
 
 const inputClass =
   "w-full rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
@@ -45,6 +47,8 @@ export default function OcorrenciasPage() {
   const [titulo, setTitulo] = useState("");
   const [categoria, setCategoria] = useState("");
   const [descricao, setDescricao] = useState("");
+  const [foto, setFoto] = useState<File | null>(null);
+  const [fotoResetKey, setFotoResetKey] = useState(0);
   const [carregando, setCarregando] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -74,10 +78,17 @@ export default function OcorrenciasPage() {
     setEnviando(true);
     setErro(null);
     try {
-      await api.criarOcorrencia(titulo.trim(), descricao.trim(), categoria.trim() || undefined);
+      await api.criarOcorrencia(
+        titulo.trim(),
+        descricao.trim(),
+        categoria.trim() || undefined,
+        foto ?? undefined,
+      );
       setTitulo("");
       setCategoria("");
       setDescricao("");
+      setFoto(null);
+      setFotoResetKey((k) => k + 1);
       await carregar();
     } catch (err) {
       setErro(err instanceof ApiError ? err.message : "Não foi possível abrir o chamado.");
@@ -137,6 +148,7 @@ export default function OcorrenciasPage() {
             rows={3}
             className={inputClass}
           />
+          <FotoInput onChange={setFoto} resetKey={fotoResetKey} />
           <button
             type="submit"
             disabled={enviando}
@@ -176,6 +188,7 @@ export default function OcorrenciasPage() {
                 <p className="mt-2 whitespace-pre-wrap text-sm text-light-text-muted dark:text-dark-text-muted">
                   {oc.descricao}
                 </p>
+                {oc.fotoUrl && <FotoThumb fotoUrl={oc.fotoUrl} alt={oc.titulo} />}
                 <p className="mt-2 text-xs text-light-text-muted dark:text-dark-text-muted">
                   {oc.unidadeIdentificacao ?? "sem unidade"} · aberto por {oc.criadoPorNome} em{" "}
                   {formatarData(oc.createdAt)}

@@ -6,6 +6,8 @@ import { ApiError, type Aviso } from "@condo/shared";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { temPermissao } from "@/lib/permissions";
+import { FotoInput } from "@/components/FotoInput";
+import { FotoThumb } from "@/components/FotoThumb";
 
 const inputClass =
   "w-full rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
@@ -27,6 +29,8 @@ export default function AvisosPage() {
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [titulo, setTitulo] = useState("");
   const [corpo, setCorpo] = useState("");
+  const [foto, setFoto] = useState<File | null>(null);
+  const [fotoResetKey, setFotoResetKey] = useState(0);
   const [carregando, setCarregando] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -55,9 +59,11 @@ export default function AvisosPage() {
     if (!titulo.trim() || !corpo.trim()) return;
     setEnviando(true);
     try {
-      await api.criarAviso(titulo.trim(), corpo.trim());
+      await api.criarAviso(titulo.trim(), corpo.trim(), foto ?? undefined);
       setTitulo("");
       setCorpo("");
+      setFoto(null);
+      setFotoResetKey((k) => k + 1);
       await carregar();
     } catch {
       setErro("Não foi possível publicar o aviso.");
@@ -102,6 +108,7 @@ export default function AvisosPage() {
             rows={3}
             className={inputClass}
           />
+          <FotoInput onChange={setFoto} resetKey={fotoResetKey} />
           <button
             type="submit"
             disabled={enviando}
@@ -132,6 +139,7 @@ export default function AvisosPage() {
               <p className="mt-1 whitespace-pre-wrap text-sm text-light-text-muted dark:text-dark-text-muted">
                 {aviso.corpo}
               </p>
+              {aviso.fotoUrl && <FotoThumb fotoUrl={aviso.fotoUrl} alt={aviso.titulo} />}
               <p className="mt-2 text-xs text-light-text-muted dark:text-dark-text-muted">
                 por {aviso.autorNome}
               </p>

@@ -33,13 +33,23 @@ export class ApiError extends Error {
 
 const ROTAS_SEM_REFRESH = new Set(["/auth/login", "/auth/refresh"]);
 
+function paraFormData(campos: Record<string, string | undefined>, foto?: File | null): FormData {
+  const dados = new FormData();
+  for (const [chave, valor] of Object.entries(campos)) {
+    if (valor !== undefined) dados.append(chave, valor);
+  }
+  if (foto) dados.append("foto", foto);
+  return dados;
+}
+
 export function createApiClient(options: ApiClientOptions) {
   async function request<T>(path: string, init?: RequestInit, tentandoNovamente = false): Promise<T> {
     const token = options.getAccessToken?.();
+    const corpoJson = typeof init?.body === "string";
     const res = await fetch(`${options.baseUrl}${path}`, {
       ...init,
       headers: {
-        ...(init?.body ? { "Content-Type": "application/json" } : {}),
+        ...(corpoJson ? { "Content-Type": "application/json" } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...init?.headers,
       },
@@ -95,10 +105,10 @@ export function createApiClient(options: ApiClientOptions) {
         body: JSON.stringify({ identificacoes }),
       }),
     listarAvisos: () => request<Aviso[]>("/avisos"),
-    criarAviso: (titulo: string, corpo: string) =>
+    criarAviso: (titulo: string, corpo: string, foto?: File) =>
       request<Aviso>("/avisos", {
         method: "POST",
-        body: JSON.stringify({ titulo, corpo }),
+        body: paraFormData({ titulo, corpo }, foto),
       }),
     listarAreasComuns: () => request<AreaComum[]>("/areas-comuns"),
     criarAreaComum: (nome: string, regras?: string) =>
@@ -115,10 +125,10 @@ export function createApiClient(options: ApiClientOptions) {
     cancelarReserva: (id: string) =>
       request<void>(`/reservas/${id}`, { method: "DELETE" }),
     listarOcorrencias: () => request<Ocorrencia[]>("/ocorrencias"),
-    criarOcorrencia: (titulo: string, descricao: string, categoria?: string) =>
+    criarOcorrencia: (titulo: string, descricao: string, categoria?: string, foto?: File) =>
       request<Ocorrencia>("/ocorrencias", {
         method: "POST",
-        body: JSON.stringify({ titulo, descricao, categoria }),
+        body: paraFormData({ titulo, descricao, categoria }, foto),
       }),
     atualizarStatusOcorrencia: (id: string, status: StatusOcorrencia) =>
       request<Ocorrencia>(`/ocorrencias/${id}/status`, {
@@ -131,18 +141,19 @@ export function createApiClient(options: ApiClientOptions) {
       nome: string,
       documento?: string,
       observacao?: string,
+      foto?: File,
     ) =>
       request<Visitante>("/visitantes", {
         method: "POST",
-        body: JSON.stringify({ unidadeId, nome, documento, observacao }),
+        body: paraFormData({ unidadeId, nome, documento, observacao }, foto),
       }),
     registrarSaidaVisitante: (id: string) =>
       request<Visitante>(`/visitantes/${id}/saida`, { method: "PATCH" }),
     listarEncomendas: () => request<Encomenda[]>("/encomendas"),
-    registrarEncomenda: (unidadeId: string, descricao?: string) =>
+    registrarEncomenda: (unidadeId: string, descricao?: string, foto?: File) =>
       request<Encomenda>("/encomendas", {
         method: "POST",
-        body: JSON.stringify({ unidadeId, descricao }),
+        body: paraFormData({ unidadeId, descricao }, foto),
       }),
     retirarEncomenda: (id: string, retiradaPor?: string) =>
       request<Encomenda>(`/encomendas/${id}/retirada`, {

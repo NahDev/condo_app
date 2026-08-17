@@ -40,6 +40,7 @@ export interface Aviso {
   id: string;
   titulo: string;
   corpo: string;
+  fotoUrl: string | null;
   condominioId: string;
   autorId: string;
   autorNome: string;
@@ -75,6 +76,7 @@ export interface Ocorrencia {
   titulo: string;
   descricao: string;
   categoria: string | null;
+  fotoUrl: string | null;
   status: StatusOcorrencia;
   unidadeId: string | null;
   unidadeIdentificacao: string | null;
@@ -88,6 +90,7 @@ export interface Visitante {
   nome: string;
   documento: string | null;
   observacao: string | null;
+  fotoUrl: string | null;
   unidadeId: string;
   unidadeIdentificacao: string;
   registradoPorNome: string;
@@ -98,6 +101,7 @@ export interface Visitante {
 export interface Encomenda {
   id: string;
   descricao: string | null;
+  fotoUrl: string | null;
   unidadeId: string;
   unidadeIdentificacao: string;
   registradoPorNome: string;

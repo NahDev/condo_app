@@ -7,6 +7,8 @@ import { ApiError } from "@condo/shared";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { temPermissao } from "@/lib/permissions";
+import { FotoInput } from "@/components/FotoInput";
+import { FotoThumb } from "@/components/FotoThumb";
 
 const inputClass =
   "w-full rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
@@ -29,6 +31,8 @@ export default function VisitantesPage() {
   const [unidadeId, setUnidadeId] = useState("");
   const [nome, setNome] = useState("");
   const [documento, setDocumento] = useState("");
+  const [foto, setFoto] = useState<File | null>(null);
+  const [fotoResetKey, setFotoResetKey] = useState(0);
   const [carregando, setCarregando] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -67,9 +71,17 @@ export default function VisitantesPage() {
     setEnviando(true);
     setErro(null);
     try {
-      await api.registrarVisitante(unidadeId, nome.trim(), documento.trim() || undefined);
+      await api.registrarVisitante(
+        unidadeId,
+        nome.trim(),
+        documento.trim() || undefined,
+        undefined,
+        foto ?? undefined,
+      );
       setNome("");
       setDocumento("");
+      setFoto(null);
+      setFotoResetKey((k) => k + 1);
       await carregar();
     } catch (err) {
       setErro(err instanceof ApiError ? err.message : "Não foi possível registrar a entrada.");
@@ -136,6 +148,7 @@ export default function VisitantesPage() {
             placeholder="Documento (opcional)"
             className={inputClass}
           />
+          <FotoInput onChange={setFoto} resetKey={fotoResetKey} />
           <button
             type="submit"
             disabled={enviando}
@@ -160,23 +173,26 @@ export default function VisitantesPage() {
               {dentroDoCondominio.map((v) => (
                 <li
                   key={v.id}
-                  className="flex items-center justify-between rounded-md border border-light-border bg-light-card p-3 dark:border-dark-border dark:bg-dark-card"
+                  className="rounded-md border border-light-border bg-light-card p-3 dark:border-dark-border dark:bg-dark-card"
                 >
-                  <div>
-                    <p className="text-sm font-medium">{v.nome}</p>
-                    <p className="text-xs text-light-text-muted dark:text-dark-text-muted">
-                      {v.unidadeIdentificacao} · entrou {formatarData(v.entrada)} · registrado por{" "}
-                      {v.registradoPorNome}
-                    </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">{v.nome}</p>
+                      <p className="text-xs text-light-text-muted dark:text-dark-text-muted">
+                        {v.unidadeIdentificacao} · entrou {formatarData(v.entrada)} · registrado por{" "}
+                        {v.registradoPorNome}
+                      </p>
+                    </div>
+                    {podeRegistrar && (
+                      <button
+                        onClick={() => handleSaida(v.id)}
+                        className="text-sm text-light-text-muted hover:text-light-text dark:text-dark-text-muted dark:hover:text-dark-text"
+                      >
+                        Registrar saída
+                      </button>
+                    )}
                   </div>
-                  {podeRegistrar && (
-                    <button
-                      onClick={() => handleSaida(v.id)}
-                      className="text-sm text-light-text-muted hover:text-light-text dark:text-dark-text-muted dark:hover:text-dark-text"
-                    >
-                      Registrar saída
-                    </button>
-                  )}
+                  {v.fotoUrl && <FotoThumb fotoUrl={v.fotoUrl} alt={v.nome} />}
                 </li>
               ))}
               {dentroDoCondominio.length === 0 && (

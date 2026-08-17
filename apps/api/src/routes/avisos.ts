@@ -2,6 +2,8 @@ import type { FastifyInstance } from "fastify";
 import { criarAvisoSchema } from "@condo/shared";
 import { prisma } from "@condo/db";
 import { authenticate, requirePermissao } from "../auth/hooks";
+import { lerMultipart } from "../lib/multipart";
+import { extensaoPermitida, salvarImagem } from "../lib/storage";
 
 export async function avisosRoutes(app: FastifyInstance) {
   app.addHook("preHandler", authenticate);
@@ -17,6 +19,7 @@ export async function avisosRoutes(app: FastifyInstance) {
       id: aviso.id,
       titulo: aviso.titulo,
       corpo: aviso.corpo,
+      fotoUrl: aviso.fotoUrl,
       condominioId: aviso.condominioId,
       autorId: aviso.autorId,
       autorNome: aviso.autor.nome,
@@ -28,15 +31,27 @@ export async function avisosRoutes(app: FastifyInstance) {
     "/avisos",
     { preHandler: requirePermissao("AVISOS", { gerenciar: true }) },
     async (request, reply) => {
-      const parsed = criarAvisoSchema.safeParse(request.body);
+      const { campos, foto } = await lerMultipart(request);
+      const parsed = criarAvisoSchema.safeParse(campos);
       if (!parsed.success) {
         return reply.code(400).send({ message: "Dados inválidos", issues: parsed.error.issues });
+      }
+
+      let fotoUrl: string | null = null;
+      if (foto) {
+        if (!extensaoPermitida(foto.mimetype)) {
+          return reply
+            .code(400)
+            .send({ message: "Formato de imagem não suportado. Use JPG, PNG ou WEBP." });
+        }
+        fotoUrl = await salvarImagem(foto.buffer, foto.mimetype, "avisos");
       }
 
       const aviso = await prisma.aviso.create({
         data: {
           titulo: parsed.data.titulo,
           corpo: parsed.data.corpo,
+          fotoUrl,
           condominioId: request.usuario!.condominioId,
           autorId: request.usuario!.sub,
         },
@@ -47,6 +62,7 @@ export async function avisosRoutes(app: FastifyInstance) {
         id: aviso.id,
         titulo: aviso.titulo,
         corpo: aviso.corpo,
+        fotoUrl: aviso.fotoUrl,
         condominioId: aviso.condominioId,
         autorId: aviso.autorId,
         autorNome: aviso.autor.nome,

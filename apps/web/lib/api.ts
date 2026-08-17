@@ -6,6 +6,8 @@ const TOKEN_KEY = "condo_access_token";
 const REFRESH_KEY = "condo_refresh_token";
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3333";
 
+export const API_BASE_URL = BASE_URL;
+
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem(TOKEN_KEY);

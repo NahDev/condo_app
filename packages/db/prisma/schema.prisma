@@ -130,6 +130,7 @@ model Aviso {
   id           String   @id @default(cuid())
   titulo       String
   corpo        String
+  fotoUrl      String?
   condominioId String
   autorId      String
   createdAt    DateTime @default(now())
@@ -184,6 +185,7 @@ model Ocorrencia {
   titulo       String
   descricao    String
   categoria    String?
+  fotoUrl      String?
   status       StatusOcorrencia @default(ABERTA)
   condominioId String
   unidadeId    String?
@@ -204,6 +206,7 @@ model Visitante {
   nome            String
   documento       String?
   observacao      String?
+  fotoUrl         String?
   unidadeId       String
   condominioId    String
   registradoPorId String
@@ -223,6 +226,7 @@ model Visitante {
 model Encomenda {
   id              String    @id @default(cuid())
   descricao       String?
+  fotoUrl         String?
   unidadeId       String
   condominioId    String
   registradoPorId String

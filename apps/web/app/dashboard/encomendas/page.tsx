@@ -7,6 +7,8 @@ import { ApiError } from "@condo/shared";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { temPermissao } from "@/lib/permissions";
+import { FotoInput } from "@/components/FotoInput";
+import { FotoThumb } from "@/components/FotoThumb";
 
 const inputClass =
   "w-full rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
@@ -28,6 +30,8 @@ export default function EncomendasPage() {
   const [encomendas, setEncomendas] = useState<Encomenda[]>([]);
   const [unidadeId, setUnidadeId] = useState("");
   const [descricao, setDescricao] = useState("");
+  const [foto, setFoto] = useState<File | null>(null);
+  const [fotoResetKey, setFotoResetKey] = useState(0);
   const [carregando, setCarregando] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -66,8 +70,10 @@ export default function EncomendasPage() {
     setEnviando(true);
     setErro(null);
     try {
-      await api.registrarEncomenda(unidadeId, descricao.trim() || undefined);
+      await api.registrarEncomenda(unidadeId, descricao.trim() || undefined, foto ?? undefined);
       setDescricao("");
+      setFoto(null);
+      setFotoResetKey((k) => k + 1);
       await carregar();
     } catch (err) {
       setErro(err instanceof ApiError ? err.message : "Não foi possível registrar a encomenda.");
@@ -128,6 +134,7 @@ export default function EncomendasPage() {
             placeholder="Descrição (opcional, ex: Caixa Amazon)"
             className={inputClass}
           />
+          <FotoInput onChange={setFoto} resetKey={fotoResetKey} />
           <button
             type="submit"
             disabled={enviando}
@@ -152,23 +159,26 @@ export default function EncomendasPage() {
               {pendentes.map((e) => (
                 <li
                   key={e.id}
-                  className="flex items-center justify-between rounded-md border border-light-border bg-light-card p-3 dark:border-dark-border dark:bg-dark-card"
+                  className="rounded-md border border-light-border bg-light-card p-3 dark:border-dark-border dark:bg-dark-card"
                 >
-                  <div>
-                    <p className="text-sm font-medium">{e.descricao ?? "Encomenda"}</p>
-                    <p className="text-xs text-light-text-muted dark:text-dark-text-muted">
-                      {e.unidadeIdentificacao} · recebida {formatarData(e.recebidaEm)} · registrado por{" "}
-                      {e.registradoPorNome}
-                    </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">{e.descricao ?? "Encomenda"}</p>
+                      <p className="text-xs text-light-text-muted dark:text-dark-text-muted">
+                        {e.unidadeIdentificacao} · recebida {formatarData(e.recebidaEm)} · registrado por{" "}
+                        {e.registradoPorNome}
+                      </p>
+                    </div>
+                    {podeRegistrar && (
+                      <button
+                        onClick={() => handleRetirada(e.id)}
+                        className="text-sm text-light-text-muted hover:text-light-text dark:text-dark-text-muted dark:hover:text-dark-text"
+                      >
+                        Registrar retirada
+                      </button>
+                    )}
                   </div>
-                  {podeRegistrar && (
-                    <button
-                      onClick={() => handleRetirada(e.id)}
-                      className="text-sm text-light-text-muted hover:text-light-text dark:text-dark-text-muted dark:hover:text-dark-text"
-                    >
-                      Registrar retirada
-                    </button>
-                  )}
+                  {e.fotoUrl && <FotoThumb fotoUrl={e.fotoUrl} alt={e.descricao ?? "Encomenda"} />}
                 </li>
               ))}
               {pendentes.length === 0 && (

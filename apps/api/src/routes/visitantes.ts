@@ -3,6 +3,8 @@ import { criarVisitanteSchema } from "@condo/shared";
 import { prisma } from "@condo/db";
 import { authenticate, requirePermissao } from "../auth/hooks";
 import { decryptField, encryptField, maskDocumento } from "../lib/crypto";
+import { lerMultipart } from "../lib/multipart";
+import { extensaoPermitida, salvarImagem } from "../lib/storage";
 
 /**
  * Decripta o documento; se o valor não estiver no formato criptografado (ex: dado
@@ -22,6 +24,7 @@ function toVisitantePublico(visitante: {
   nome: string;
   documento: string | null;
   observacao: string | null;
+  fotoUrl: string | null;
   unidadeId: string;
   entrada: Date;
   saida: Date | null;
@@ -33,6 +36,7 @@ function toVisitantePublico(visitante: {
     nome: visitante.nome,
     documento: visitante.documento ? maskDocumento(decriptarDocumento(visitante.documento)) : null,
     observacao: visitante.observacao,
+    fotoUrl: visitante.fotoUrl,
     unidadeId: visitante.unidadeId,
     unidadeIdentificacao: visitante.unidade.identificacao,
     registradoPorNome: visitante.registradoPor.nome,
@@ -69,7 +73,8 @@ export async function visitantesRoutes(app: FastifyInstance) {
     "/visitantes",
     { preHandler: requirePermissao("VISITANTES", { gerenciar: true }) },
     async (request, reply) => {
-      const parsed = criarVisitanteSchema.safeParse(request.body);
+      const { campos, foto } = await lerMultipart(request);
+      const parsed = criarVisitanteSchema.safeParse(campos);
       if (!parsed.success) {
         return reply.code(400).send({ message: "Dados inválidos", issues: parsed.error.issues });
       }
@@ -81,11 +86,22 @@ export async function visitantesRoutes(app: FastifyInstance) {
         return reply.code(404).send({ message: "Unidade não encontrada" });
       }
 
+      let fotoUrl: string | null = null;
+      if (foto) {
+        if (!extensaoPermitida(foto.mimetype)) {
+          return reply
+            .code(400)
+            .send({ message: "Formato de imagem não suportado. Use JPG, PNG ou WEBP." });
+        }
+        fotoUrl = await salvarImagem(foto.buffer, foto.mimetype, "visitantes");
+      }
+
       const visitante = await prisma.visitante.create({
         data: {
           nome: parsed.data.nome,
           documento: parsed.data.documento ? encryptField(parsed.data.documento) : null,
           observacao: parsed.data.observacao ?? null,
+          fotoUrl,
           unidadeId: parsed.data.unidadeId,
           condominioId: request.usuario!.condominioId,
           registradoPorId: request.usuario!.sub,
