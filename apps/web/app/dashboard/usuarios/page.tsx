@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   ApiError,
   RECURSOS,
@@ -13,6 +14,9 @@ import {
 } from "@condo/shared";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+
+const inputClass =
+  "rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
 
 const PAPEL_LABEL: Record<Papel, string> = {
   ADMIN: "Admin",
@@ -145,29 +149,38 @@ export default function UsuariosPage() {
   return (
     <div className="max-w-3xl space-y-6">
       <div className="flex items-center gap-3">
-        <img src="/icon-usuario.jpg" alt="" className="h-12 w-12 rounded-lg border border-slate-200 object-contain" />
+        <Image
+          src="/icon-usuario.jpg"
+          alt=""
+          width={48}
+          height={48}
+          className="h-12 w-12 rounded-lg border border-light-border object-contain dark:border-dark-border"
+        />
         <div>
           <h1 className="text-lg font-semibold">Usuários</h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-light-text-muted dark:text-dark-text-muted">
             Crie acessos para moradores e porteiros e personalize o que cada um pode ver e fazer.
           </p>
         </div>
       </div>
 
-      <form onSubmit={handleCriar} className="space-y-2 rounded-md border border-slate-200 bg-white p-4">
+      <form
+        onSubmit={handleCriar}
+        className="space-y-2 rounded-md border border-light-border bg-light-card p-4 dark:border-dark-border dark:bg-dark-card"
+      >
         <div className="grid grid-cols-2 gap-2">
           <input
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             placeholder="Nome"
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className={inputClass}
           />
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="E-mail"
             type="email"
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className={inputClass}
           />
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -176,12 +189,12 @@ export default function UsuariosPage() {
             onChange={(e) => setSenha(e.target.value)}
             placeholder="Senha inicial"
             type="password"
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className={inputClass}
           />
           <select
             value={papel}
             onChange={(e) => setPapel(e.target.value as Papel)}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className={inputClass}
           >
             <option value="MORADOR">Morador</option>
             <option value="PORTEIRO">Porteiro</option>
@@ -192,7 +205,7 @@ export default function UsuariosPage() {
           <select
             value={unidadeId}
             onChange={(e) => setUnidadeId(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className={`w-full ${inputClass}`}
           >
             {unidades.map((u) => (
               <option key={u.id} value={u.id}>
@@ -204,34 +217,37 @@ export default function UsuariosPage() {
         <button
           type="submit"
           disabled={enviando}
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
           {enviando ? "Criando..." : "Criar usuário"}
         </button>
       </form>
 
-      {erro && <p className="text-sm text-red-600">{erro}</p>}
+      {erro && <p className="text-sm text-error">{erro}</p>}
 
       {carregando ? (
-        <p className="text-sm text-slate-500">Carregando...</p>
+        <p className="text-sm text-light-text-muted dark:text-dark-text-muted">Carregando...</p>
       ) : (
         <ul className="space-y-3">
           {usuarios.map((u) => (
-            <li key={u.id} className="rounded-md border border-slate-200 bg-white p-4">
+            <li
+              key={u.id}
+              className="rounded-md border border-light-border bg-light-card p-4 dark:border-dark-border dark:bg-dark-card"
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">
                     {u.nome}{" "}
-                    <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+                    <span className="ml-1 rounded-full bg-light-bg-muted px-2 py-0.5 text-xs text-light-text-muted dark:bg-dark-bg-muted dark:text-dark-text-muted">
                       {PAPEL_LABEL[u.papel]}
                     </span>
                     {!u.ativo && (
-                      <span className="ml-1 rounded-full bg-red-100 px-2 py-0.5 text-xs text-red-700">
+                      <span className="ml-1 rounded-full bg-error/10 px-2 py-0.5 text-xs text-error dark:bg-error dark:text-error-foreground">
                         Inativo
                       </span>
                     )}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-light-text-muted dark:text-dark-text-muted">
                     {u.email}
                     {u.unidadeIdentificacao ? ` · ${u.unidadeIdentificacao}` : ""}
                   </p>
@@ -239,7 +255,7 @@ export default function UsuariosPage() {
                 {u.id !== usuarioLogado?.id && (
                   <button
                     onClick={() => handleToggleAtivo(u)}
-                    className="text-sm text-slate-600 hover:text-slate-900"
+                    className="text-sm text-light-text-muted hover:text-light-text dark:text-dark-text-muted dark:hover:text-dark-text"
                   >
                     {u.ativo ? "Desativar" : "Reativar"}
                   </button>
@@ -247,11 +263,13 @@ export default function UsuariosPage() {
               </div>
 
               {(u.papel === "MORADOR" || u.papel === "PORTEIRO") && editando[u.id] && (
-                <div className="mt-3 border-t border-slate-100 pt-3">
-                  <p className="mb-2 text-xs font-medium text-slate-500">Permissões</p>
+                <div className="mt-3 border-t border-light-border pt-3 dark:border-dark-border">
+                  <p className="mb-2 text-xs font-medium text-light-text-muted dark:text-dark-text-muted">
+                    Permissões
+                  </p>
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="text-left text-slate-400">
+                      <tr className="text-left text-light-text-muted dark:text-dark-text-muted">
                         <th className="pb-1 font-normal">Recurso</th>
                         <th className="pb-1 font-normal">Ver</th>
                         <th className="pb-1 font-normal">Gerenciar</th>
@@ -284,7 +302,7 @@ export default function UsuariosPage() {
                   </table>
                   <button
                     onClick={() => handleSalvarPermissoes(u.id)}
-                    className="mt-2 text-sm text-slate-700 underline hover:text-slate-900"
+                    className="mt-2 text-sm text-light-text underline hover:text-primary dark:text-dark-text dark:hover:text-primary"
                   >
                     Salvar permissões
                   </button>

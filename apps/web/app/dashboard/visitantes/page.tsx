@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Image from "next/image";
 import type { Unidade, Visitante } from "@condo/shared";
 import { ApiError } from "@condo/shared";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { temPermissao } from "@/lib/permissions";
+
+const inputClass =
+  "w-full rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
 
 function formatarData(iso: string) {
   return new Date(iso).toLocaleString("pt-BR", {
@@ -89,19 +93,30 @@ export default function VisitantesPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-3">
-        <img src="/icon-visitantes.jpg" alt="" className="h-12 w-12 rounded-lg border border-slate-200 object-contain" />
+        <Image
+          src="/icon-visitantes.jpg"
+          alt=""
+          width={48}
+          height={48}
+          className="h-12 w-12 rounded-lg border border-light-border object-contain dark:border-dark-border"
+        />
         <div>
           <h1 className="text-lg font-semibold">Visitantes</h1>
-          <p className="text-sm text-slate-500">Controle de entrada e saída de visitantes.</p>
+          <p className="text-sm text-light-text-muted dark:text-dark-text-muted">
+            Controle de entrada e saída de visitantes.
+          </p>
         </div>
       </div>
 
       {podeRegistrar && (
-        <form onSubmit={handleSubmit} className="space-y-2 rounded-md border border-slate-200 bg-white p-4">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-2 rounded-md border border-light-border bg-light-card p-4 dark:border-dark-border dark:bg-dark-card"
+        >
           <select
             value={unidadeId}
             onChange={(e) => setUnidadeId(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className={inputClass}
           >
             {unidades.map((u) => (
               <option key={u.id} value={u.id}>
@@ -113,41 +128,43 @@ export default function VisitantesPage() {
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             placeholder="Nome do visitante"
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className={inputClass}
           />
           <input
             value={documento}
             onChange={(e) => setDocumento(e.target.value)}
             placeholder="Documento (opcional)"
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className={inputClass}
           />
           <button
             type="submit"
             disabled={enviando}
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             {enviando ? "Registrando..." : "Registrar entrada"}
           </button>
         </form>
       )}
 
-      {erro && <p className="text-sm text-red-600">{erro}</p>}
+      {erro && <p className="text-sm text-error">{erro}</p>}
 
       {carregando ? (
-        <p className="text-sm text-slate-500">Carregando...</p>
+        <p className="text-sm text-light-text-muted dark:text-dark-text-muted">Carregando...</p>
       ) : (
         <div className="space-y-4">
           <div>
-            <h2 className="mb-2 text-sm font-medium text-slate-700">No condomínio agora</h2>
+            <h2 className="mb-2 text-sm font-medium text-light-text dark:text-dark-text">
+              No condomínio agora
+            </h2>
             <ul className="space-y-2">
               {dentroDoCondominio.map((v) => (
                 <li
                   key={v.id}
-                  className="flex items-center justify-between rounded-md border border-slate-200 bg-white p-3"
+                  className="flex items-center justify-between rounded-md border border-light-border bg-light-card p-3 dark:border-dark-border dark:bg-dark-card"
                 >
                   <div>
                     <p className="text-sm font-medium">{v.nome}</p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-light-text-muted dark:text-dark-text-muted">
                       {v.unidadeIdentificacao} · entrou {formatarData(v.entrada)} · registrado por{" "}
                       {v.registradoPorNome}
                     </p>
@@ -155,7 +172,7 @@ export default function VisitantesPage() {
                   {podeRegistrar && (
                     <button
                       onClick={() => handleSaida(v.id)}
-                      className="text-sm text-slate-600 hover:text-slate-900"
+                      className="text-sm text-light-text-muted hover:text-light-text dark:text-dark-text-muted dark:hover:text-dark-text"
                     >
                       Registrar saída
                     </button>
@@ -163,7 +180,7 @@ export default function VisitantesPage() {
                 </li>
               ))}
               {dentroDoCondominio.length === 0 && (
-                <li className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-400">
+                <li className="rounded-md border border-light-border bg-light-card p-3 text-sm text-light-text-muted dark:border-dark-border dark:bg-dark-card dark:text-dark-text-muted">
                   Nenhum visitante no condomínio.
                 </li>
               )}
@@ -172,10 +189,15 @@ export default function VisitantesPage() {
 
           {jaSairam.length > 0 && (
             <div>
-              <h2 className="mb-2 text-sm font-medium text-slate-700">Histórico</h2>
+              <h2 className="mb-2 text-sm font-medium text-light-text dark:text-dark-text">
+                Histórico
+              </h2>
               <ul className="space-y-2">
                 {jaSairam.map((v) => (
-                  <li key={v.id} className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-500">
+                  <li
+                    key={v.id}
+                    className="rounded-md border border-light-border bg-light-card p-3 text-sm text-light-text-muted dark:border-dark-border dark:bg-dark-card dark:text-dark-text-muted"
+                  >
                     {v.nome} · {v.unidadeIdentificacao} · {formatarData(v.entrada)} —{" "}
                     {formatarData(v.saida!)}
                   </li>

@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Image from "next/image";
 import type { Ocorrencia, StatusOcorrencia } from "@condo/shared";
 import { ApiError } from "@condo/shared";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { temPermissao } from "@/lib/permissions";
+
+const inputClass =
+  "w-full rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
 
 const STATUS_LABEL: Record<StatusOcorrencia, string> = {
   ABERTA: "Aberta",
@@ -14,9 +18,9 @@ const STATUS_LABEL: Record<StatusOcorrencia, string> = {
 };
 
 const STATUS_COR: Record<StatusOcorrencia, string> = {
-  ABERTA: "bg-amber-100 text-amber-800",
-  EM_ANDAMENTO: "bg-blue-100 text-blue-800",
-  RESOLVIDA: "bg-green-100 text-green-800",
+  ABERTA: "bg-warning/10 text-warning dark:bg-warning dark:text-warning-foreground",
+  EM_ANDAMENTO: "bg-primary/10 text-primary dark:bg-primary dark:text-primary-foreground",
+  RESOLVIDA: "bg-success/10 text-success dark:bg-success dark:text-success-foreground",
 };
 
 const PROXIMO_STATUS: Partial<Record<StatusOcorrencia, { status: StatusOcorrencia; label: string }>> = {
@@ -94,72 +98,92 @@ export default function OcorrenciasPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-3">
-        <img src="/icon-ocorrencias.jpg" alt="" className="h-12 w-12 rounded-lg border border-slate-200 object-contain" />
+        <Image
+          src="/icon-ocorrencias.jpg"
+          alt=""
+          width={48}
+          height={48}
+          className="h-12 w-12 rounded-lg border border-light-border object-contain dark:border-dark-border"
+        />
         <div>
           <h1 className="text-lg font-semibold">Ocorrências</h1>
-          <p className="text-sm text-slate-500">Abra e acompanhe chamados do condomínio.</p>
+          <p className="text-sm text-light-text-muted dark:text-dark-text-muted">
+            Abra e acompanhe chamados do condomínio.
+          </p>
         </div>
       </div>
 
       {podeGerenciar && (
-      <form onSubmit={handleSubmit} className="space-y-2 rounded-md border border-slate-200 bg-white p-4">
-        <input
-          value={titulo}
-          onChange={(e) => setTitulo(e.target.value)}
-          placeholder="Título (ex: Vazamento na garagem)"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-        />
-        <input
-          value={categoria}
-          onChange={(e) => setCategoria(e.target.value)}
-          placeholder="Categoria (opcional, ex: Hidráulica)"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-        />
-        <textarea
-          value={descricao}
-          onChange={(e) => setDescricao(e.target.value)}
-          placeholder="Descreva o problema..."
-          rows={3}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-        />
-        <button
-          type="submit"
-          disabled={enviando}
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-2 rounded-md border border-light-border bg-light-card p-4 dark:border-dark-border dark:bg-dark-card"
         >
-          {enviando ? "Abrindo..." : "Abrir chamado"}
-        </button>
-      </form>
+          <input
+            value={titulo}
+            onChange={(e) => setTitulo(e.target.value)}
+            placeholder="Título (ex: Vazamento na garagem)"
+            className={inputClass}
+          />
+          <input
+            value={categoria}
+            onChange={(e) => setCategoria(e.target.value)}
+            placeholder="Categoria (opcional, ex: Hidráulica)"
+            className={inputClass}
+          />
+          <textarea
+            value={descricao}
+            onChange={(e) => setDescricao(e.target.value)}
+            placeholder="Descreva o problema..."
+            rows={3}
+            className={inputClass}
+          />
+          <button
+            type="submit"
+            disabled={enviando}
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          >
+            {enviando ? "Abrindo..." : "Abrir chamado"}
+          </button>
+        </form>
       )}
 
-      {erro && <p className="text-sm text-red-600">{erro}</p>}
+      {erro && <p className="text-sm text-error">{erro}</p>}
 
       {carregando ? (
-        <p className="text-sm text-slate-500">Carregando...</p>
+        <p className="text-sm text-light-text-muted dark:text-dark-text-muted">Carregando...</p>
       ) : (
         <ul className="space-y-3">
           {ocorrencias.map((oc) => {
             const proximo = podeGerenciar ? PROXIMO_STATUS[oc.status] : undefined;
             return (
-              <li key={oc.id} className="rounded-md border border-slate-200 bg-white p-4">
+              <li
+                key={oc.id}
+                className="rounded-md border border-light-border bg-light-card p-4 dark:border-dark-border dark:bg-dark-card"
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <h2 className="font-medium">{oc.titulo}</h2>
-                    {oc.categoria && <p className="text-xs text-slate-400">{oc.categoria}</p>}
+                    {oc.categoria && (
+                      <p className="text-xs text-light-text-muted dark:text-dark-text-muted">
+                        {oc.categoria}
+                      </p>
+                    )}
                   </div>
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COR[oc.status]}`}>
                     {STATUS_LABEL[oc.status]}
                   </span>
                 </div>
-                <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">{oc.descricao}</p>
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 whitespace-pre-wrap text-sm text-light-text-muted dark:text-dark-text-muted">
+                  {oc.descricao}
+                </p>
+                <p className="mt-2 text-xs text-light-text-muted dark:text-dark-text-muted">
                   {oc.unidadeIdentificacao ?? "sem unidade"} · aberto por {oc.criadoPorNome} em{" "}
                   {formatarData(oc.createdAt)}
                 </p>
                 {proximo && (
                   <button
                     onClick={() => avancarStatus(oc.id, proximo.status)}
-                    className="mt-3 text-sm text-slate-700 underline hover:text-slate-900"
+                    className="mt-3 text-sm text-light-text underline hover:text-primary dark:text-dark-text dark:hover:text-primary"
                   >
                     {proximo.label}
                   </button>
@@ -168,7 +192,7 @@ export default function OcorrenciasPage() {
             );
           })}
           {ocorrencias.length === 0 && (
-            <li className="rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-400">
+            <li className="rounded-md border border-light-border bg-light-card p-4 text-sm text-light-text-muted dark:border-dark-border dark:bg-dark-card dark:text-dark-text-muted">
               Nenhuma ocorrência registrada.
             </li>
           )}

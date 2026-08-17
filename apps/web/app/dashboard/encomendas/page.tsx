@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Image from "next/image";
 import type { Encomenda, Unidade } from "@condo/shared";
 import { ApiError } from "@condo/shared";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { temPermissao } from "@/lib/permissions";
+
+const inputClass =
+  "w-full rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
 
 function formatarData(iso: string) {
   return new Date(iso).toLocaleString("pt-BR", {
@@ -87,19 +91,30 @@ export default function EncomendasPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-3">
-        <img src="/icon-encomendas.jpg" alt="" className="h-12 w-12 rounded-lg border border-slate-200 object-contain" />
+        <Image
+          src="/icon-encomendas.jpg"
+          alt=""
+          width={48}
+          height={48}
+          className="h-12 w-12 rounded-lg border border-light-border object-contain dark:border-dark-border"
+        />
         <div>
           <h1 className="text-lg font-semibold">Encomendas</h1>
-          <p className="text-sm text-slate-500">Controle de recebimento e retirada de encomendas.</p>
+          <p className="text-sm text-light-text-muted dark:text-dark-text-muted">
+            Controle de recebimento e retirada de encomendas.
+          </p>
         </div>
       </div>
 
       {podeRegistrar && (
-        <form onSubmit={handleSubmit} className="space-y-2 rounded-md border border-slate-200 bg-white p-4">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-2 rounded-md border border-light-border bg-light-card p-4 dark:border-dark-border dark:bg-dark-card"
+        >
           <select
             value={unidadeId}
             onChange={(e) => setUnidadeId(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className={inputClass}
           >
             {unidades.map((u) => (
               <option key={u.id} value={u.id}>
@@ -111,35 +126,37 @@ export default function EncomendasPage() {
             value={descricao}
             onChange={(e) => setDescricao(e.target.value)}
             placeholder="Descrição (opcional, ex: Caixa Amazon)"
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+            className={inputClass}
           />
           <button
             type="submit"
             disabled={enviando}
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             {enviando ? "Registrando..." : "Registrar encomenda"}
           </button>
         </form>
       )}
 
-      {erro && <p className="text-sm text-red-600">{erro}</p>}
+      {erro && <p className="text-sm text-error">{erro}</p>}
 
       {carregando ? (
-        <p className="text-sm text-slate-500">Carregando...</p>
+        <p className="text-sm text-light-text-muted dark:text-dark-text-muted">Carregando...</p>
       ) : (
         <div className="space-y-4">
           <div>
-            <h2 className="mb-2 text-sm font-medium text-slate-700">Aguardando retirada</h2>
+            <h2 className="mb-2 text-sm font-medium text-light-text dark:text-dark-text">
+              Aguardando retirada
+            </h2>
             <ul className="space-y-2">
               {pendentes.map((e) => (
                 <li
                   key={e.id}
-                  className="flex items-center justify-between rounded-md border border-slate-200 bg-white p-3"
+                  className="flex items-center justify-between rounded-md border border-light-border bg-light-card p-3 dark:border-dark-border dark:bg-dark-card"
                 >
                   <div>
                     <p className="text-sm font-medium">{e.descricao ?? "Encomenda"}</p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-light-text-muted dark:text-dark-text-muted">
                       {e.unidadeIdentificacao} · recebida {formatarData(e.recebidaEm)} · registrado por{" "}
                       {e.registradoPorNome}
                     </p>
@@ -147,7 +164,7 @@ export default function EncomendasPage() {
                   {podeRegistrar && (
                     <button
                       onClick={() => handleRetirada(e.id)}
-                      className="text-sm text-slate-600 hover:text-slate-900"
+                      className="text-sm text-light-text-muted hover:text-light-text dark:text-dark-text-muted dark:hover:text-dark-text"
                     >
                       Registrar retirada
                     </button>
@@ -155,7 +172,7 @@ export default function EncomendasPage() {
                 </li>
               ))}
               {pendentes.length === 0 && (
-                <li className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-400">
+                <li className="rounded-md border border-light-border bg-light-card p-3 text-sm text-light-text-muted dark:border-dark-border dark:bg-dark-card dark:text-dark-text-muted">
                   Nenhuma encomenda pendente.
                 </li>
               )}
@@ -164,10 +181,15 @@ export default function EncomendasPage() {
 
           {retiradas.length > 0 && (
             <div>
-              <h2 className="mb-2 text-sm font-medium text-slate-700">Histórico</h2>
+              <h2 className="mb-2 text-sm font-medium text-light-text dark:text-dark-text">
+                Histórico
+              </h2>
               <ul className="space-y-2">
                 {retiradas.map((e) => (
-                  <li key={e.id} className="rounded-md border border-slate-200 bg-white p-3 text-sm text-slate-500">
+                  <li
+                    key={e.id}
+                    className="rounded-md border border-light-border bg-light-card p-3 text-sm text-light-text-muted dark:border-dark-border dark:bg-dark-card dark:text-dark-text-muted"
+                  >
                     {e.descricao ?? "Encomenda"} · {e.unidadeIdentificacao} · retirada em{" "}
                     {formatarData(e.retiradaEm!)}
                   </li>
