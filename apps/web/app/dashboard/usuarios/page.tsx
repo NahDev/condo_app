@@ -53,7 +53,7 @@ export default function UsuariosPage() {
 
   useEffect(() => {
     if (usuarioLogado && !podeGerenciar) {
-      router.push("/dashboard/avisos");
+      router.push("/dashboard");
     }
   }, [usuarioLogado, podeGerenciar, router]);
 

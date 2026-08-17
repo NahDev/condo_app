@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -26,8 +27,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen">
       <aside className="w-64 shrink-0 border-r border-light-border bg-light-card p-4 dark:border-dark-border dark:bg-dark-card">
-        <Logo className="mb-6" />
+        <Link href="/dashboard" className="mb-6 block">
+          <Logo />
+        </Link>
         <nav className="space-y-1 text-sm">
+          <a href="/dashboard" className={linkClass}>
+            Início
+          </a>
+          <div className="my-2 border-t border-light-border dark:border-dark-border" />
           <a href="/dashboard/avisos" className={linkClass}>
             Avisos
           </a>
