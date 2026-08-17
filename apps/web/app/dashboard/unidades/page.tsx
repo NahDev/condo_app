@@ -72,9 +72,12 @@ export default function UnidadesPage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-lg font-semibold">Unidades</h1>
-        <p className="text-sm text-slate-500">Blocos e apartamentos do condomínio.</p>
+      <div className="flex items-center gap-3">
+        <img src="/icon-unidades.jpg" alt="" className="h-12 w-12 rounded-lg border border-slate-200 object-contain" />
+        <div>
+          <h1 className="text-lg font-semibold">Unidades</h1>
+          <p className="text-sm text-slate-500">Blocos e apartamentos do condomínio.</p>
+        </div>
       </div>
 
       {podeGerenciar && (

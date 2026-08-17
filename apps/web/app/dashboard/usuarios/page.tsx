@@ -144,11 +144,14 @@ export default function UsuariosPage() {
 
   return (
     <div className="max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-lg font-semibold">Usuários</h1>
-        <p className="text-sm text-slate-500">
-          Crie acessos para moradores e porteiros e personalize o que cada um pode ver e fazer.
-        </p>
+      <div className="flex items-center gap-3">
+        <img src="/icon-usuario.jpg" alt="" className="h-12 w-12 rounded-lg border border-slate-200 object-contain" />
+        <div>
+          <h1 className="text-lg font-semibold">Usuários</h1>
+          <p className="text-sm text-slate-500">
+            Crie acessos para moradores e porteiros e personalize o que cada um pode ver e fazer.
+          </p>
+        </div>
       </div>
 
       <form onSubmit={handleCriar} className="space-y-2 rounded-md border border-slate-200 bg-white p-4">
