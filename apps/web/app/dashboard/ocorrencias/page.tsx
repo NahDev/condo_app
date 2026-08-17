@@ -93,9 +93,12 @@ export default function OcorrenciasPage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-lg font-semibold">Ocorrências</h1>
-        <p className="text-sm text-slate-500">Abra e acompanhe chamados do condomínio.</p>
+      <div className="flex items-center gap-3">
+        <img src="/icon-ocorrencias.jpg" alt="" className="h-12 w-12 rounded-lg border border-slate-200 object-contain" />
+        <div>
+          <h1 className="text-lg font-semibold">Ocorrências</h1>
+          <p className="text-sm text-slate-500">Abra e acompanhe chamados do condomínio.</p>
+        </div>
       </div>
 
       {podeGerenciar && (
