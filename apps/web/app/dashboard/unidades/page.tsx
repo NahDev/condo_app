@@ -6,6 +6,7 @@ import { ApiError, type Unidade } from "@condo/shared";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { temPermissao } from "@/lib/permissions";
+import { EmptyState } from "@/components/EmptyState";
 
 const inputClass =
   "w-full rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
@@ -124,6 +125,13 @@ export default function UnidadesPage() {
 
       {carregando ? (
         <p className="text-sm text-light-text-muted dark:text-dark-text-muted">Carregando...</p>
+      ) : unidades.length === 0 ? (
+        <EmptyState
+          icone="/icon-unidades.jpg"
+          titulo="Nenhuma unidade cadastrada."
+          podeCriar={podeGerenciar}
+          dicaCriacao="Use o formulário acima para adicionar o primeiro bloco/apartamento."
+        />
       ) : (
         <ul className="divide-y divide-light-border rounded-md border border-light-border bg-light-card dark:divide-dark-border dark:border-dark-border dark:bg-dark-card">
           {unidades.map((u) => (
@@ -131,11 +139,6 @@ export default function UnidadesPage() {
               {u.identificacao}
             </li>
           ))}
-          {unidades.length === 0 && (
-            <li className="px-4 py-3 text-sm text-light-text-muted dark:text-dark-text-muted">
-              Nenhuma unidade cadastrada.
-            </li>
-          )}
         </ul>
       )}
     </div>

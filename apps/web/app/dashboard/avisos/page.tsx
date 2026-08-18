@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { temPermissao } from "@/lib/permissions";
 import { FotoInput } from "@/components/FotoInput";
 import { FotoThumb } from "@/components/FotoThumb";
+import { EmptyState } from "@/components/EmptyState";
 
 const inputClass =
   "w-full rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
@@ -146,8 +147,13 @@ export default function AvisosPage() {
             </li>
           ))}
           {avisos.length === 0 && (
-            <li className="rounded-md border border-light-border bg-light-card p-4 text-sm text-light-text-muted dark:border-dark-border dark:bg-dark-card dark:text-dark-text-muted">
-              Nenhum aviso publicado ainda.
+            <li>
+              <EmptyState
+                icone="/icon-avisos.jpg"
+                titulo="Nenhum aviso publicado ainda."
+                podeCriar={podeCriar}
+                dicaCriacao="Use o formulário acima para publicar o primeiro comunicado."
+              />
             </li>
           )}
         </ul>
