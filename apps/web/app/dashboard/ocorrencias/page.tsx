@@ -10,6 +10,7 @@ import { temPermissao } from "@/lib/permissions";
 import { FotoInput } from "@/components/FotoInput";
 import { FotoThumb } from "@/components/FotoThumb";
 import { EmptyState } from "@/components/EmptyState";
+import { useToast } from "@/components/ToastProvider";
 
 const inputClass =
   "w-full rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
@@ -42,6 +43,7 @@ function formatarData(iso: string) {
 
 export default function OcorrenciasPage() {
   const { usuario } = useAuth();
+  const toast = useToast();
   const podeGerenciar = temPermissao(usuario, "OCORRENCIAS", "gerenciar");
 
   const [ocorrencias, setOcorrencias] = useState<Ocorrencia[]>([]);
@@ -90,9 +92,10 @@ export default function OcorrenciasPage() {
       setDescricao("");
       setFoto(null);
       setFotoResetKey((k) => k + 1);
+      toast.sucesso("Chamado aberto.");
       await carregar();
     } catch (err) {
-      setErro(err instanceof ApiError ? err.message : "Não foi possível abrir o chamado.");
+      toast.erro(err instanceof ApiError ? err.message : "Não foi possível abrir o chamado.");
     } finally {
       setEnviando(false);
     }
@@ -101,9 +104,10 @@ export default function OcorrenciasPage() {
   async function avancarStatus(id: string, status: StatusOcorrencia) {
     try {
       await api.atualizarStatusOcorrencia(id, status);
+      toast.sucesso("Status atualizado.");
       await carregar();
     } catch (err) {
-      setErro(err instanceof ApiError ? err.message : "Não foi possível atualizar o status.");
+      toast.erro(err instanceof ApiError ? err.message : "Não foi possível atualizar o status.");
     }
   }
 

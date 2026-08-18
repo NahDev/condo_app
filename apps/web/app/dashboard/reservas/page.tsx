@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { temPermissao } from "@/lib/permissions";
 import { EmptyState } from "@/components/EmptyState";
+import { useToast } from "@/components/ToastProvider";
 
 const inputClass =
   "rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
@@ -24,6 +25,7 @@ function formatarPeriodo(inicio: string, fim: string) {
 
 export default function ReservasPage() {
   const { usuario } = useAuth();
+  const toast = useToast();
   const podeGerenciar = temPermissao(usuario, "RESERVAS", "gerenciar");
 
   const [areas, setAreas] = useState<AreaComum[]>([]);
@@ -76,9 +78,10 @@ export default function ReservasPage() {
       );
       setInicio("");
       setFim("");
+      toast.sucesso("Reserva confirmada.");
       await carregar();
     } catch (err) {
-      setErro(err instanceof ApiError ? err.message : "Não foi possível criar a reserva.");
+      toast.erro(err instanceof ApiError ? err.message : "Não foi possível criar a reserva.");
     } finally {
       setEnviando(false);
     }
@@ -87,9 +90,10 @@ export default function ReservasPage() {
   async function handleCancelar(id: string) {
     try {
       await api.cancelarReserva(id);
+      toast.sucesso("Reserva cancelada.");
       await carregar();
     } catch (err) {
-      setErro(err instanceof ApiError ? err.message : "Não foi possível cancelar a reserva.");
+      toast.erro(err instanceof ApiError ? err.message : "Não foi possível cancelar a reserva.");
     }
   }
 

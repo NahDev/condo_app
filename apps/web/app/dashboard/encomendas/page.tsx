@@ -10,6 +10,7 @@ import { temPermissao } from "@/lib/permissions";
 import { FotoInput } from "@/components/FotoInput";
 import { FotoThumb } from "@/components/FotoThumb";
 import { EmptyState } from "@/components/EmptyState";
+import { useToast } from "@/components/ToastProvider";
 
 const inputClass =
   "w-full rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
@@ -25,6 +26,7 @@ function formatarData(iso: string) {
 
 export default function EncomendasPage() {
   const { usuario } = useAuth();
+  const toast = useToast();
   const podeRegistrar = temPermissao(usuario, "ENCOMENDAS", "gerenciar");
 
   const [unidades, setUnidades] = useState<Unidade[]>([]);
@@ -75,9 +77,10 @@ export default function EncomendasPage() {
       setDescricao("");
       setFoto(null);
       setFotoResetKey((k) => k + 1);
+      toast.sucesso("Encomenda registrada.");
       await carregar();
     } catch (err) {
-      setErro(err instanceof ApiError ? err.message : "Não foi possível registrar a encomenda.");
+      toast.erro(err instanceof ApiError ? err.message : "Não foi possível registrar a encomenda.");
     } finally {
       setEnviando(false);
     }
@@ -86,9 +89,10 @@ export default function EncomendasPage() {
   async function handleRetirada(id: string) {
     try {
       await api.retirarEncomenda(id);
+      toast.sucesso("Retirada registrada.");
       await carregar();
     } catch (err) {
-      setErro(err instanceof ApiError ? err.message : "Não foi possível registrar a retirada.");
+      toast.erro(err instanceof ApiError ? err.message : "Não foi possível registrar a retirada.");
     }
   }
 

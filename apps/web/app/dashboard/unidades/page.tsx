@@ -7,12 +7,14 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { temPermissao } from "@/lib/permissions";
 import { EmptyState } from "@/components/EmptyState";
+import { useToast } from "@/components/ToastProvider";
 
 const inputClass =
   "w-full rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
 
 export default function UnidadesPage() {
   const { usuario } = useAuth();
+  const toast = useToast();
   const podeGerenciar = temPermissao(usuario, "UNIDADES", "gerenciar");
 
   const [unidades, setUnidades] = useState<Unidade[]>([]);
@@ -21,7 +23,6 @@ export default function UnidadesPage() {
   const [carregando, setCarregando] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [mensagem, setMensagem] = useState<string | null>(null);
 
   async function carregar() {
     setCarregando(true);
@@ -49,7 +50,6 @@ export default function UnidadesPage() {
 
     setEnviando(true);
     setErro(null);
-    setMensagem(null);
     try {
       const identificacoes = numeros.map((numero) => `Bloco ${bloco.trim()} - Apto ${numero}`);
       const resposta = await api.criarUnidadesLote(identificacoes);
@@ -66,10 +66,10 @@ export default function UnidadesPage() {
           `${resposta.duplicadas.length} já ${resposta.duplicadas.length === 1 ? "existia" : "existiam"}`,
         );
       }
-      setMensagem(partes.join(" · "));
+      toast.sucesso(partes.join(" · "));
       await carregar();
     } catch (err) {
-      setErro(err instanceof ApiError ? err.message : "Não foi possível adicionar as unidades.");
+      toast.erro(err instanceof ApiError ? err.message : "Não foi possível adicionar as unidades.");
     } finally {
       setEnviando(false);
     }
@@ -120,7 +120,6 @@ export default function UnidadesPage() {
         </form>
       )}
 
-      {mensagem && <p className="text-sm text-success">{mensagem}</p>}
       {erro && <p className="text-sm text-error">{erro}</p>}
 
       {carregando ? (

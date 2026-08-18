@@ -14,6 +14,7 @@ import {
 } from "@condo/shared";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/components/ToastProvider";
 
 const inputClass =
   "rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
@@ -36,6 +37,7 @@ function permissoesParaMapa(permissoes: PermissaoRecurso[]): Record<string, Perm
 
 export default function UsuariosPage() {
   const { usuario: usuarioLogado } = useAuth();
+  const toast = useToast();
   const router = useRouter();
   const podeGerenciar = usuarioLogado?.papel === "SINDICO" || usuarioLogado?.papel === "ADMIN";
 
@@ -102,9 +104,10 @@ export default function UsuariosPage() {
       setNome("");
       setEmail("");
       setSenha("");
+      toast.sucesso("Usuário criado.");
       await carregar();
     } catch (err) {
-      setErro(err instanceof ApiError ? err.message : "Não foi possível criar o usuário.");
+      toast.erro(err instanceof ApiError ? err.message : "Não foi possível criar o usuário.");
     } finally {
       setEnviando(false);
     }
@@ -113,9 +116,10 @@ export default function UsuariosPage() {
   async function handleToggleAtivo(u: UsuarioAdmin) {
     try {
       await api.atualizarStatusUsuario(u.id, !u.ativo);
+      toast.sucesso(u.ativo ? "Usuário desativado." : "Usuário reativado.");
       await carregar();
     } catch (err) {
-      setErro(err instanceof ApiError ? err.message : "Não foi possível atualizar o usuário.");
+      toast.erro(err instanceof ApiError ? err.message : "Não foi possível atualizar o usuário.");
     }
   }
 
@@ -136,9 +140,10 @@ export default function UsuariosPage() {
     const permissoes = Object.values(editando[usuarioId] ?? {});
     try {
       await api.atualizarPermissoesUsuario(usuarioId, permissoes);
+      toast.sucesso("Permissões salvas.");
       await carregar();
     } catch (err) {
-      setErro(err instanceof ApiError ? err.message : "Não foi possível salvar as permissões.");
+      toast.erro(err instanceof ApiError ? err.message : "Não foi possível salvar as permissões.");
     }
   }
 

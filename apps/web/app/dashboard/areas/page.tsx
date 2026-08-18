@@ -7,12 +7,14 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { temPermissao } from "@/lib/permissions";
 import { EmptyState } from "@/components/EmptyState";
+import { useToast } from "@/components/ToastProvider";
 
 const inputClass =
   "w-full rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
 
 export default function AreasComunsPage() {
   const { usuario } = useAuth();
+  const toast = useToast();
   const podeCriar = temPermissao(usuario, "AREAS_COMUNS", "gerenciar");
 
   const [areas, setAreas] = useState<AreaComum[]>([]);
@@ -48,9 +50,10 @@ export default function AreasComunsPage() {
       await api.criarAreaComum(nome.trim(), regras.trim() || undefined);
       setNome("");
       setRegras("");
+      toast.sucesso("Área comum cadastrada.");
       await carregar();
     } catch {
-      setErro("Não foi possível criar a área comum.");
+      toast.erro("Não foi possível criar a área comum.");
     }
   }
 
