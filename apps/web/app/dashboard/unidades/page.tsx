@@ -7,6 +7,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { temPermissao } from "@/lib/permissions";
 import { EmptyState } from "@/components/EmptyState";
+import { ListSkeleton } from "@/components/Skeleton";
 import { useToast } from "@/components/ToastProvider";
 
 const inputClass =
@@ -123,7 +124,7 @@ export default function UnidadesPage() {
       {erro && <p className="text-sm text-error">{erro}</p>}
 
       {carregando ? (
-        <p className="text-sm text-light-text-muted dark:text-dark-text-muted">Carregando...</p>
+        <ListSkeleton />
       ) : unidades.length === 0 ? (
         <EmptyState
           icone="/icon-unidades.jpg"

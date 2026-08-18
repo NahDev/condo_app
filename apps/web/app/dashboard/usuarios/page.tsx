@@ -16,6 +16,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/components/ToastProvider";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { ListSkeleton } from "@/components/Skeleton";
 
 const inputClass =
   "rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
@@ -244,7 +245,7 @@ export default function UsuariosPage() {
       {erro && <p className="text-sm text-error">{erro}</p>}
 
       {carregando ? (
-        <p className="text-sm text-light-text-muted dark:text-dark-text-muted">Carregando...</p>
+        <ListSkeleton linhas={4} />
       ) : (
         <ul className="space-y-3">
           {usuarios.map((u) => (

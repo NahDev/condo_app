@@ -10,6 +10,7 @@ import { temPermissao } from "@/lib/permissions";
 import { FotoInput } from "@/components/FotoInput";
 import { FotoThumb } from "@/components/FotoThumb";
 import { EmptyState } from "@/components/EmptyState";
+import { ListSkeleton } from "@/components/Skeleton";
 import { useToast } from "@/components/ToastProvider";
 
 const inputClass =
@@ -167,7 +168,7 @@ export default function OcorrenciasPage() {
       {erro && <p className="text-sm text-error">{erro}</p>}
 
       {carregando ? (
-        <p className="text-sm text-light-text-muted dark:text-dark-text-muted">Carregando...</p>
+        <ListSkeleton />
       ) : (
         <ul className="space-y-3">
           {ocorrencias.map((oc) => {

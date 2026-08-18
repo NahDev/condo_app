@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { temPermissao } from "@/lib/permissions";
 import { EmptyState } from "@/components/EmptyState";
+import { ListSkeleton } from "@/components/Skeleton";
 import { useToast } from "@/components/ToastProvider";
 import { useConfirm } from "@/components/ConfirmProvider";
 
@@ -178,7 +179,7 @@ export default function ReservasPage() {
       {erro && <p className="text-sm text-error">{erro}</p>}
 
       {carregando ? (
-        <p className="text-sm text-light-text-muted dark:text-dark-text-muted">Carregando...</p>
+        <ListSkeleton />
       ) : (
         <ul className="space-y-3">
           {reservasAtivas.map((reserva) => {
