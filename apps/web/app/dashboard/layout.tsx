@@ -1,18 +1,40 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-const linkClass =
-  "block rounded-md px-3 py-2 text-light-text dark:text-dark-text hover:bg-light-bg-muted dark:hover:bg-dark-bg-muted transition-colors";
+const NAV_ITEMS = [
+  { href: "/dashboard/avisos", label: "Avisos" },
+  { href: "/dashboard/unidades", label: "Unidades" },
+  { href: "/dashboard/areas", label: "Áreas comuns" },
+  { href: "/dashboard/reservas", label: "Reservas" },
+  { href: "/dashboard/ocorrencias", label: "Ocorrências" },
+  { href: "/dashboard/visitantes", label: "Visitantes" },
+  { href: "/dashboard/encomendas", label: "Encomendas" },
+];
+
+const linkBase = "block rounded-md px-3 py-2 text-sm transition-colors";
+const linkInativo =
+  "text-light-text hover:bg-light-bg-muted dark:text-dark-text dark:hover:bg-dark-bg-muted";
+const linkAtivo = "bg-primary font-medium text-primary-foreground";
+
+function NavLink({ href, label, pathname }: { href: string; label: string; pathname: string }) {
+  const ativo = pathname === href;
+  return (
+    <Link href={href} className={`${linkBase} ${ativo ? linkAtivo : linkInativo}`}>
+      {label}
+    </Link>
+  );
+}
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { usuario, carregando, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!carregando && !usuario) {
@@ -31,35 +53,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Logo />
         </Link>
         <nav className="space-y-1 text-sm">
-          <a href="/dashboard" className={linkClass}>
-            Início
-          </a>
+          <NavLink href="/dashboard" label="Início" pathname={pathname} />
           <div className="my-2 border-t border-light-border dark:border-dark-border" />
-          <a href="/dashboard/avisos" className={linkClass}>
-            Avisos
-          </a>
-          <a href="/dashboard/unidades" className={linkClass}>
-            Unidades
-          </a>
-          <a href="/dashboard/areas" className={linkClass}>
-            Áreas comuns
-          </a>
-          <a href="/dashboard/reservas" className={linkClass}>
-            Reservas
-          </a>
-          <a href="/dashboard/ocorrencias" className={linkClass}>
-            Ocorrências
-          </a>
-          <a href="/dashboard/visitantes" className={linkClass}>
-            Visitantes
-          </a>
-          <a href="/dashboard/encomendas" className={linkClass}>
-            Encomendas
-          </a>
+          {NAV_ITEMS.map((item) => (
+            <NavLink key={item.href} {...item} pathname={pathname} />
+          ))}
           {(usuario.papel === "SINDICO" || usuario.papel === "ADMIN") && (
-            <a href="/dashboard/usuarios" className={linkClass}>
-              Usuários
-            </a>
+            <NavLink href="/dashboard/usuarios" label="Usuários" pathname={pathname} />
           )}
         </nav>
       </aside>
