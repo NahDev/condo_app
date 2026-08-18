@@ -15,6 +15,7 @@ import {
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/components/ToastProvider";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 const inputClass =
   "rounded-md border border-light-border bg-light-card px-3 py-2 text-sm text-light-text placeholder:text-light-text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-bg dark:text-dark-text dark:placeholder:text-dark-text-muted/70";
@@ -38,6 +39,7 @@ function permissoesParaMapa(permissoes: PermissaoRecurso[]): Record<string, Perm
 export default function UsuariosPage() {
   const { usuario: usuarioLogado } = useAuth();
   const toast = useToast();
+  const confirmar = useConfirm();
   const router = useRouter();
   const podeGerenciar = usuarioLogado?.papel === "SINDICO" || usuarioLogado?.papel === "ADMIN";
 
@@ -114,6 +116,17 @@ export default function UsuariosPage() {
   }
 
   async function handleToggleAtivo(u: UsuarioAdmin) {
+    if (u.ativo) {
+      const ok = await confirmar({
+        titulo: `Desativar ${u.nome}?`,
+        descricao: "A pessoa perde o acesso ao painel imediatamente. Você pode reativar quando quiser.",
+        confirmarLabel: "Desativar",
+        cancelarLabel: "Voltar",
+        perigoso: true,
+      });
+      if (!ok) return;
+    }
+
     try {
       await api.atualizarStatusUsuario(u.id, !u.ativo);
       toast.sucesso(u.ativo ? "Usuário desativado." : "Usuário reativado.");
