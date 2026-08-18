@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
@@ -22,12 +22,38 @@ const linkInativo =
   "text-light-text hover:bg-light-bg-muted dark:text-dark-text dark:hover:bg-dark-bg-muted";
 const linkAtivo = "bg-primary font-medium text-primary-foreground";
 
-function NavLink({ href, label, pathname }: { href: string; label: string; pathname: string }) {
+function NavLink({
+  href,
+  label,
+  pathname,
+  onClick,
+}: {
+  href: string;
+  label: string;
+  pathname: string;
+  onClick?: () => void;
+}) {
   const ativo = pathname === href;
   return (
-    <Link href={href} className={`${linkBase} ${ativo ? linkAtivo : linkInativo}`}>
+    <Link href={href} onClick={onClick} className={`${linkBase} ${ativo ? linkAtivo : linkInativo}`}>
       {label}
     </Link>
+  );
+}
+
+function IconMenu({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  );
+}
+
+function IconFechar({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
   );
 }
 
@@ -35,6 +61,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { usuario, carregando, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [menuAberto, setMenuAberto] = useState(false);
 
   useEffect(() => {
     if (!carregando && !usuario) {
@@ -42,16 +69,42 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [carregando, usuario, router]);
 
+  useEffect(() => {
+    setMenuAberto(false);
+  }, [pathname]);
+
   if (carregando || !usuario) {
     return <div className="p-8 text-sm text-light-text-muted dark:text-dark-text-muted">Carregando...</div>;
   }
 
   return (
     <div className="flex min-h-screen">
-      <aside className="w-64 shrink-0 border-r border-light-border bg-light-card p-4 dark:border-dark-border dark:bg-dark-card">
-        <Link href="/dashboard" className="mb-6 block">
-          <Logo />
-        </Link>
+      {menuAberto && (
+        <div
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          onClick={() => setMenuAberto(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 w-64 shrink-0 transform border-r border-light-border bg-light-card p-4 transition-transform duration-200 dark:border-dark-border dark:bg-dark-card md:relative md:translate-x-0 md:transition-none ${
+          menuAberto ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="mb-6 flex items-center justify-between">
+          <Link href="/dashboard">
+            <Logo />
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMenuAberto(false)}
+            aria-label="Fechar menu"
+            className="text-light-text-muted hover:text-light-text dark:text-dark-text-muted dark:hover:text-dark-text md:hidden"
+          >
+            <IconFechar className="h-5 w-5" />
+          </button>
+        </div>
         <nav className="space-y-1 text-sm">
           <NavLink href="/dashboard" label="Início" pathname={pathname} />
           <div className="my-2 border-t border-light-border dark:border-dark-border" />
@@ -63,11 +116,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           )}
         </nav>
       </aside>
+
       <div className="flex-1">
-        <header className="flex items-center justify-between border-b border-light-border bg-light-card px-6 py-3 dark:border-dark-border dark:bg-dark-card">
-          <div className="text-sm">
-            <p className="font-medium text-light-text dark:text-dark-text">{usuario.nome}</p>
-            <p className="text-light-text-muted dark:text-dark-text-muted">{usuario.papel}</p>
+        <header className="flex items-center justify-between border-b border-light-border bg-light-card px-4 py-3 dark:border-dark-border dark:bg-dark-card md:px-6">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMenuAberto(true)}
+              aria-label="Abrir menu"
+              className="text-light-text-muted hover:text-light-text dark:text-dark-text-muted dark:hover:text-dark-text md:hidden"
+            >
+              <IconMenu className="h-5 w-5" />
+            </button>
+            <div className="text-sm">
+              <p className="font-medium text-light-text dark:text-dark-text">{usuario.nome}</p>
+              <p className="text-light-text-muted dark:text-dark-text-muted">{usuario.papel}</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -79,7 +143,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </button>
           </div>
         </header>
-        <main className="bg-light-bg-muted p-6 dark:bg-dark-bg">{children}</main>
+        <main className="bg-light-bg-muted p-4 dark:bg-dark-bg md:p-6">{children}</main>
       </div>
     </div>
   );
